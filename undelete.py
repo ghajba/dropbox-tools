@@ -12,21 +12,38 @@ DATE_FORMAT = "%a, %d %b %Y %H:%M:%S +0000"
 
 MAX_DAYS=15
 
-USE_RESTORE = True
-
-if len(sys.argv) not in (2, 3):
-    print "Usage: recover.py <output folder> [<start walk>]"
+if len(sys.argv) not in (5,6):
+    print "Usage: undelete.py <option> <from date> <to date> <output folder> [<start folder>]"
+    print "    option:"
+    print "        LIST               list all files which are deleted in the start folder"
+    print "        UNDELETE           recover all deleted files into the output folder"
+    print "    from date              from date to start the recovery or listing"
+    print "    to date                to date to start the recovery or listing"
+    print "    output folder          where to recover the deleted files"
+    print "    start folder           Optional, indicates where to start the walk"
     sys.exit(1)
-recover_to = sys.argv[1]
+
+# if len(sys.argv) not in (3, 5, 7, 9) or sys.argv[1] not in ("LIST", "UNDELETE"):
+#     print "Usage: undelete.py <option> <output folder> [-s <start walk>] [-f <from date>] [-t <to date>]"
+#     print "    option:"
+#     print "        LIST               list all files which are deleted in the start folder"
+#     print "        UNDELETE           recover all deleted files into the output folder"
+#     print "    -f                     from date to start the recovery or listing"
+#     print "    -t                     to date to start the recovery or listing"
+#     sys.exit(1)
+recover_to = sys.argv[4]
 try:
-    start_walk = sys.argv[2]
+    start_walk = sys.argv[5]
 except IndexError:
     start_walk = "/"
+USE_RESTORE = sys.argv[1] == "UNDELETE"
+from_date = sys.argv[2]
+to_date = sys.argv[3]
 
 client = dropbox_client()
 
 
-def recover_tree(folder = "/", recover_to=recover_to):
+def recover_tree(folder = "/", recover_to=recover_to, from_date=None, to_date=None):
     # called recursively. We're going to walk the entire Dropbox
     # file tree, starting at 'folder', files first, and recover anything
     # deleted in the last 5 days.
@@ -47,6 +64,10 @@ def recover_tree(folder = "/", recover_to=recover_to):
 
         # this is the date the file was deleted on
         date = datetime.datetime.strptime(filedata["modified"], DATE_FORMAT)
+        if from_date is not None and from_date > date:
+            continue
+        if to_date is not None and to_date < date:
+            continue
 
         # this is where we'll restore it to.
         target = os.path.join(recover_to, filedata["path"][1:])
@@ -54,9 +75,9 @@ def recover_tree(folder = "/", recover_to=recover_to):
         if os.path.exists(target):
             # already recovered
             pass
-        elif date < datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS):
+        #elif date < datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS):
             # not deleted recently
-            pass
+        #    pass
         else:
             print "  %s is deleted"%(filedata["path"])
 
@@ -71,17 +92,6 @@ def recover_tree(folder = "/", recover_to=recover_to):
                 pass
 
             if USE_RESTORE:
-
-                restore = client.restore(filedata["path"], alive["rev"])
-                print restore
-            else:
-
-                # try to download file.
-                # I'm torn here - I could just use the Dropbox API and tell it to 
-                # restore the deleted file to the non-deleted version. PRoblem with
-                # that is that it might recover too much. THis approach lets me restore
-                # to a new folder with _just_ the restored files in, and cherry-pick
-                # what I want to copy back into the main dropbox.
                 try:
                     fh = client.get_file(filedata["path"], rev=alive["rev"])
                     with open(target+".temp", "w") as oh:
@@ -96,7 +106,7 @@ def recover_tree(folder = "/", recover_to=recover_to):
     # be deleted too, but don't try to undelete them, we'll rely on them being
     # implicitly reinflated when their files are restored.
     for file in filter(lambda f: f.get("is_dir", False), meta["contents"]):
-        recover_tree(file["path"], recover_to)
+        recover_tree(file["path"], recover_to, from_date, to_date)
 
 
 recover_tree(start_walk)
