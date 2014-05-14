@@ -10,15 +10,16 @@ Perhaps you have to do the same and create an application on Dropbox and add tha
 ## undelete.py
 Usage:
 
-    undelete.py <LIST|UNDELETE> <recovery folder> <from date> <end date> [<root path>]
+    python undelete.py <LIST|UNDELETE> <from date> <to date> <recovery folder> [<root path>]
 eg:
-    undelete.py UNDELETE ./recovery 18042014 20042014 /HomoErraticus
+    python undelete.py UNDELETE 18042014 20042014 ./recovery /HomoErraticus
 
 The date format is currently ddMMyyyy.
 The option LIST lists all deleted files in the given time interval without any recovery.
 The option UNDELETE recovers all deleted files in the given time interval into the recovery folder -- you have to copy it to your Dropbox folder again if you want to sync them again.
 It walks the remote Dropbox repository starting with the <root path> if no <root path> is specified, the script walks the whole Dropbox structure.
 If the file already exists in the recovery folder it will not be overridden.
+
 
 # Original description from the forked repository:
 http://movieos.org/code/dropbox-tools/

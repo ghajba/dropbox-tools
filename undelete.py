@@ -9,18 +9,19 @@ import datetime
 
 # dropbox API doesn't return any sensible datestrings.
 DATE_FORMAT = "%a, %d %b %Y %H:%M:%S +0000"
+INPUT_DATE_FORMAT = "%d%m%Y"
 
 MAX_DAYS=15
 
 if len(sys.argv) not in (5,6):
-    print "Usage: undelete.py <option> <from date> <to date> <output folder> [<start folder>]"
+    print "Usage: undelete.py <LIST|UNDELETE> <from date> <to date> <recovery folder> [<root path>]"
     print "    option:"
     print "        LIST               list all files which are deleted in the start folder"
     print "        UNDELETE           recover all deleted files into the output folder"
     print "    from date              from date to start the recovery or listing"
     print "    to date                to date to start the recovery or listing"
-    print "    output folder          where to recover the deleted files"
-    print "    start folder           Optional, indicates where to start the walk"
+    print "    recovery folder        where to recover the deleted files"
+    print "    root path              Optional, indicates where to start the walk"
     sys.exit(1)
 
 # if len(sys.argv) not in (3, 5, 7, 9) or sys.argv[1] not in ("LIST", "UNDELETE"):
@@ -37,8 +38,8 @@ try:
 except IndexError:
     start_walk = "/"
 USE_RESTORE = sys.argv[1] == "UNDELETE"
-from_date = sys.argv[2]
-to_date = sys.argv[3]
+from_date = datetime.datetime.strptime(sys.argv[2], INPUT_DATE_FORMAT)
+to_date = datetime.datetime.strptime(sys.argv[3], INPUT_DATE_FORMAT)
 
 client = dropbox_client()
 
@@ -53,7 +54,7 @@ def recover_tree(folder = "/", recover_to=recover_to, from_date=None, to_date=No
         meta = client.metadata(folder, include_deleted=True, file_limit=10000)
     except rest.ErrorResponse, e:
         print e # normally "too many files". Dropbox will only list 10000 files in
-        # a folder. THere is probably a way around this, but I haven't needed it yet.
+        # a folder.
         return
     
     # walk files first, folders later
@@ -66,7 +67,7 @@ def recover_tree(folder = "/", recover_to=recover_to, from_date=None, to_date=No
         date = datetime.datetime.strptime(filedata["modified"], DATE_FORMAT)
         if from_date is not None and from_date > date:
             continue
-        if to_date is not None and to_date < date:
+        if to_date is not None and to_date+datetime.timedelta(days=1) < date:
             continue
 
         # this is where we'll restore it to.
@@ -75,9 +76,6 @@ def recover_tree(folder = "/", recover_to=recover_to, from_date=None, to_date=No
         if os.path.exists(target):
             # already recovered
             pass
-        #elif date < datetime.datetime.now() - datetime.timedelta(days=MAX_DAYS):
-            # not deleted recently
-        #    pass
         else:
             print "  %s is deleted"%(filedata["path"])
 
@@ -109,4 +107,4 @@ def recover_tree(folder = "/", recover_to=recover_to, from_date=None, to_date=No
         recover_tree(file["path"], recover_to, from_date, to_date)
 
 
-recover_tree(start_walk)
+recover_tree(folder=start_walk, from_date=from_date, to_date=to_date)
