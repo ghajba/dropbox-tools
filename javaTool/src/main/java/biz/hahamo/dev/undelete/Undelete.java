@@ -140,8 +140,8 @@ public class Undelete {
         out.println("    option:");
         out.println("        LIST               list all files which are deleted in the start folder");
         out.println("        UNDELETE           recover all deleted files into the output folder");
-        out.println("    from date              from date to start the recovery or listing");
-        out.println("    to date                to date to start the recovery or listing");
+        out.println("    from date              from date to start the recovery or listing in the format yyyyMMdd");
+        out.println("    to date                to date to start the recovery or listing in the format yyyyMMdd");
         out.println("    recovery folder        where to recover the deleted files");
         out.println("    root path              Optional, indicates where to start the walk");
     }
