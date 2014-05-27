@@ -7,6 +7,9 @@ Perhaps you have to do the same and create an application on Dropbox and add tha
 
 # My Tools
 
+You can use either the Python script undelete.py (where you have a dependency on common.py and have to install oauth and dropbox libraries listed in the "requirements.txt") or use the single executable  "undelete" (currently for Mac OS but I plan Windows and Linux versions too).
+The argument list is needed for the single executable too.
+
 ## undelete.py
 Usage:
 
