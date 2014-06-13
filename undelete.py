@@ -18,8 +18,8 @@ if len(sys.argv) not in (5,6):
     print "    option:"
     print "        LIST               list all files which are deleted in the start folder"
     print "        UNDELETE           recover all deleted files into the output folder"
-    print "    from date              from date to start the recovery or listing"
-    print "    to date                to date to start the recovery or listing"
+    print "    from date              from date to start the recovery or listing (format: ddmmyyyy)"
+    print "    to date                to date to start the recovery or listing (format: ddmmyyyy)"
     print "    recovery folder        where to recover the deleted files"
     print "    root path              Optional, indicates where to start the walk"
     sys.exit(1)
