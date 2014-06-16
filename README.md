@@ -5,6 +5,8 @@ I forked this repository to adapt the solution to my preferences. The usage is a
 However I had to change the common.py and add my Application's key and secret to it because the original version was not enabled for public use.
 Perhaps you have to do the same and create an application on Dropbox and add that's key and secret to the application.
 
+http://hahamo.biz/2014/05/27/dropbox-utilities/
+
 # My Tools
 
 You can use either the Python script undelete.py (where you have a dependency on common.py and have to install oauth and dropbox libraries listed in the "requirements.txt") or use the single executable  "undelete" (currently for Mac OS but I plan Windows and Linux versions too).
